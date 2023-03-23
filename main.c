@@ -1,53 +1,85 @@
 #include "monty.h"
 
-globales_t globalvar = {NULL, NULL, NULL};
-
 /**
- * main - entry point for the CLI program
- * @argc: count of arguments passed to the program
- * @argv: pointer to an array of char pointers to arguments
- * Return: EXIT_SUCCESS or EXIT_FAILURE
+ *lines_check - check line to arguments
+ *@buffer: contain all
+ *@line_number: count to lines inside the file
+ *Return: Tokens
  */
 
-int main(int argc, char **argv)
+char *lines_check(char *buffer, unsigned int line_number)
 {
-	char *token = NULL;
-	size_t line_buf_size = 0;
-	int line_number = 0, flag = 0, flag2 = 0;
-	ssize_t line_size;
+	char *token = NULL, *num_t = NULL;
+	long int i = 0;
+
+	token = strtok(buffer, " \t\n");
+	if (strcmp(token, "push") == 0)
+	{
+		num_t = strtok(NULL, " \t\n");
+		if (num_t == NULL)
+		{
+			fprintf(stderr, "L%u: usage: push integer\n", line_number);
+			free(buffer);
+			var_glob[1] = 1;
+			return (NULL);
+		}
+		for (i = 0; num_t[i] != '\0'; i++)
+		{
+			if (num_t[i] == '-')
+				i++;
+			if (num_t[i] < 48 || num_t[i] > 57)
+			{
+				fprintf(stderr, "L%u: usage: push integer\n", line_number);
+				free(buffer);
+				var_glob[1] = 1;
+				return (NULL);
+			}
+		}
+		var_glob[0] = atoi(num_t);
+	}
+	return (token);
+}
+
+/**
+ *main - execute the monty interpreter
+ *@argc: count number to arguments per line
+ *@argv: array to arguments
+ *Return: 0 if no exist or exit failure in case to error
+ */
+
+int main(int argc, char *argv[])
+{
 	stack_t *stack = NULL;
+	FILE *file;
+	char *buffer = NULL, *command_f = NULL;
+	size_t size = 0;
+	unsigned int line_number = 0;
 
 	if (argc != 2)
-		stderr_usage();
-	globalvar.fd = fopen(argv[1], "r");
-	if (globalvar.fd == NULL)
-		stderr_fopen(argv[1]);
-	line_size = getline(&globalvar.line_buf, &line_buf_size, globalvar.fd);
-	if (globalvar.line_buf[0] == '#')
-		line_size = getline(&globalvar.line_buf, &line_buf_size, globalvar.fd);
-	while (line_size >= 0)
-	{flag = 0;
-		flag2 = 0;
+	{
+		fprintf(stderr, "USAGE: monty file\n");
+		exit(EXIT_FAILURE);
+	}
+	file = fopen(argv[1], "r");
+	if (file == NULL)
+	{
+		fprintf(stderr, "Error: Can't open file %s\n", argv[1]);
+		exit(EXIT_FAILURE);
+	}
+	while (getline(&buffer, &size, file) != EOF)
+	{
 		line_number++;
-		token = strtok(globalvar.line_buf, DELIM);
-		globalvar.token2 = strtok(NULL, DELIM);
-		if (token == NULL)
-		{flag2 = 1;
-			nop(&stack, line_number); }
-		if (flag2 == 0)
-		{
-			if (token[0] == '#')
-			{
-				line_size = getline(&globalvar.line_buf,
-						    &line_buf_size, globalvar.fd);
-				flag = 1; }}
-		if (flag == 0)
-		{get_builtin(token, &stack, line_number);
-			line_size = getline(&globalvar.line_buf, &line_buf_size,
-					    globalvar.fd); }}
-	free_dlistint(stack);
-	free(globalvar.line_buf);
-	globalvar.line_buf = NULL;
-	fclose(globalvar.fd);
-	return (EXIT_SUCCESS);
+		if (strlen(buffer) == 1 || strspn(buffer, " \t\n") == strlen(buffer))
+			continue;
+		command_f = lines_check(buffer, line_number);
+		if (command_f == NULL)
+			break;
+		functions_monty(&stack, command_f, line_number);
+	}
+	free(buffer);
+	free_malloc(stack);
+	fclose(file);
+	if (var_glob[1] == 1)
+		exit(EXIT_FAILURE);
+	exit(EXIT_SUCCESS);
 }
