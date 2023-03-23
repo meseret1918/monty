@@ -1,107 +1,123 @@
 #include "monty.h"
 
-/**
- * add - add two element to the top of the stack.
- * @stack: pointer head stack.
- * @line_number: line number in file.
- * Return: void.
- */
+void monty_add(stack_t **stack, unsigned int line_number);
+void monty_sub(stack_t **stack, unsigned int line_number);
+void monty_div(stack_t **stack, unsigned int line_number);
+void monty_mul(stack_t **stack, unsigned int line_number);
+void monty_mod(stack_t **stack, unsigned int line_number);
 
-void add(stack_t **stack, unsigned int line_number)
+/**
+ * monty_add - Adds the top two values of a stack_t linked list.
+ * @stack: A pointer to the top mode node of a stack_t linked list.
+ * @line_number: The current working line number of a Monty bytecodes file.
+ *
+ * Description: The result is stored in the second value node
+ *              from the top and the top value  is removed.
+ */
+void monty_add(stack_t **stack, unsigned int line_number)
 {
-	if (*stack == NULL || (*stack)->next == NULL)
+	if ((*stack)->next == NULL || (*stack)->next->next == NULL)
 	{
-		fprintf(stderr, "L%u: can't add, stack too short\n", line_number);
-		var_glob[1] = 1;
+		set_op_tok_error(short_stack_error(line_number, "add"));
 		return;
 	}
-	(*stack)->next->n = (*stack)->n + (*stack)->next->n;
-	pop(stack, line_number);
+
+	(*stack)->next->next->n += (*stack)->next->n;
+	monty_pop(stack, line_number);
 }
 
 /**
- * sub - substracts the top elements of the stack.
- * @stack: pointer head stack.
- * @line_number: line number in file.
- * Return: void.
+ * monty_sub - Subtracts the second value from the top of
+ *             a stack_t linked list by the top value.
+ * @stack: A pointer to the top mode node of a stack_t linked list.
+ * @line_number: The current working line number of a Monty bytecodes file.
+ *
+ * Description: The result is stored in the second value node
+ *              from the top and the top value is removed.
  */
-
-void sub(stack_t **stack, unsigned int line_number)
+void monty_sub(stack_t **stack, unsigned int line_number)
 {
-	if (*stack == NULL || (*stack)->next == NULL)
+	if ((*stack)->next == NULL || (*stack)->next->next == NULL)
 	{
-		fprintf(stderr, "L%u: can't sub, stack too short\n", line_number);
-		var_glob[1] = 1;
+		set_op_tok_error(short_stack_error(line_number, "sub"));
 		return;
 	}
-	(*stack)->next->n = (*stack)->next->n - (*stack)->n;
-	pop(stack, line_number);
-}
-/**
- * _div - divides the second top elements of the stack.
- * @stack: pointer head stack.
- * @line_number: line number in file.
- * Return: void.
- */
 
-void _div(stack_t **stack, unsigned int line_number)
-{
-	if (*stack == NULL || (*stack)->next == NULL)
-	{
-		fprintf(stderr, "L%u: can't sub, stack too short\n", line_number);
-		var_glob[1] = 1;
-		return;
-	}
-	if ((*stack)->n == 0)
-	{
-		fprintf(stderr, "L%u: division by zero\n", line_number);
-		var_glob[1] = 1;
-		return;
-	}
-	(*stack)->next->n = (*stack)->next->n / (*stack)->n;
-	pop(stack, line_number);
+	(*stack)->next->next->n -= (*stack)->next->n;
+	monty_pop(stack, line_number);
 }
 
 /**
- * mul - multiplies the second top elements of the stack.
- * @stack: pointer head stack.
- * @line_number: line number in file.
- * Return: void.
+ * monty_div - Divides the second value from the top of
+ *             a stack_t linked list by the top value.
+ * @stack: A pointer to the top mode node of a stack_t linked list.
+ * @line_number: The current working line number of a Monty bytecodes file.
+ *
+ * Description: The result is stored in the second value node
+ *              from the top and the top value is removed.
  */
-
-void mul(stack_t **stack, unsigned int line_number)
+void monty_div(stack_t **stack, unsigned int line_number)
 {
-	if (*stack == NULL || (*stack)->next == NULL)
+	if ((*stack)->next == NULL || (*stack)->next->next == NULL)
 	{
-		fprintf(stderr, "L%u: can't mul, stack too short\n", line_number);
-		var_glob[1] = 1;
+		set_op_tok_error(short_stack_error(line_number, "div"));
 		return;
 	}
-	(*stack)->next->n = (*stack)->next->n * (*stack)->n;
-	pop(stack, line_number);
+
+	if ((*stack)->next->n == 0)
+	{
+		set_op_tok_error(div_error(line_number));
+		return;
+	}
+
+	(*stack)->next->next->n /= (*stack)->next->n;
+	monty_pop(stack, line_number);
 }
 
 /**
- * mod - computes the rest off the division of the second top elements stack.
- * @stack: pointer head stack.
- * @line_number: line number in file.
- * Return: void.
+ * monty_mul - Multiplies the second value from the top of
+ *             a stack_t linked list by the top value.
+ * @stack: A pointer to the top mode node of a stack_t linked list.
+ * @line_number: The current working line number of a Monty bytecodes file.
+ *
+ * Description: The result is stored in the second value node
+ *              from the top and the top value is removed.
  */
-
-void mod(stack_t **stack, unsigned int line_number)
+void monty_mul(stack_t **stack, unsigned int line_number)
 {
-	if (*stack == NULL || (*stack)->next == NULL)
+	if ((*stack)->next == NULL || (*stack)->next->next == NULL)
 	{
-		fprintf(stderr, "L%u: can't mod, stack too short\n", line_number);
-		var_glob[1] = 1;
+		set_op_tok_error(short_stack_error(line_number, "mul"));
 		return;
 	}
-	if ((*stack)->n == 0)
+
+	(*stack)->next->next->n *= (*stack)->next->n;
+	monty_pop(stack, line_number);
+}
+
+/**
+ * monty_mod - Computes the modulus of the second value from the
+ *             top of a stack_t linked list  by the top value.
+ * @stack: A pointer to the top mode node of a stack_t linked list.
+ * @line_number: The current working line number of a Monty bytecodes file.
+ *
+ * Description: The result is stored in the second value node
+ *              from the top and the top value is removed.
+ */
+void monty_mod(stack_t **stack, unsigned int line_number)
+{
+	if ((*stack)->next == NULL || (*stack)->next->next == NULL)
 	{
-		fprintf(stderr, "L%u: division by zero\n", line_number);
-		var_glob[1] = 1;
+		set_op_tok_error(short_stack_error(line_number, "mod"));
 		return;
 	}
-	(*stack)->next->n = (*stack)->next->n % (*stack)->n;
-	pop(stack, line_number);
+
+	if ((*stack)->next->n == 0)
+	{
+		set_op_tok_error(div_error(line_number));
+		return;
+	}
+
+	(*stack)->next->next->n %= (*stack)->next->n;
+	monty_pop(stack, line_number);
 }

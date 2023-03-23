@@ -1,52 +1,67 @@
 #include "monty.h"
+#include <string.h>
+
+void free_stack(stack_t **stack);
+int init_stack(stack_t **stack);
+int check_mode(stack_t *stack);
 
 /**
- * create_node_stack - create a node stack.
- * @stack: A pointer to top and bottom stack.
- * Return: EXIT SUCCESS
+ * free_stack - Frees a stack_t stack.
+ * @stack: A pointer to the top (stack) or
+ *         bottom (queue) of a stack_t.
  */
-int create_node_stack(stack_t **stack)
+void free_stack(stack_t **stack)
 {
-	stack_t *p;
-
-	p = malloc(sizeof(stack_t));
-	if (p == NULL)
-		stderr_malloc();
-	p->n = STACK;
-	p->prev = NULL;
-	p->next = NULL;
-
-	*stack = p;
-
-	return (EXIT_SUCCESS);
-}
-/**
- * free_node_stack - Frees a stack_t stack.
- * @stack: A pointer to top and bottom stack.
- */
-void free_node_stack(stack_t **stack)
-{
-	stack_t *temp_node = *stack;
+	stack_t *tmp = *stack;
 
 	while (*stack)
 	{
-		temp_node = (*stack)->next;
+		tmp = (*stack)->next;
 		free(*stack);
-		*stack = temp_node;
+		*stack = tmp;
 	}
 }
-/**
- * check_opcode - checks if STACK or QUEUE.
- * @stack: A pointer to top and bottom stack.
- * Return: The value of Stack or Queue
- */
-int check_opcode(stack_t *stack)
-{
-	int ret_val = 2;
 
+/**
+ * init_stack - Initializes a stack_t stack with beginning
+ *              stack and ending queue nodes.
+ * @stack: A pointer to an unitialized stack_t stack.
+ *
+ * Return: If an error occurs - EXIT_FAILURE.
+ *         Otherwise - EXIT_SUCCESS.
+ */
+int init_stack(stack_t **stack)
+{
+	stack_t *s;
+
+	s = malloc(sizeof(stack_t));
+	if (s == NULL)
+		return (malloc_error());
+
+	s->n = STACK;
+	s->prev = NULL;
+	s->next = NULL;
+
+	*stack = s;
+
+	return (EXIT_SUCCESS);
+}
+
+/**
+ * check_mode - Checks if a stack_t linked list is in stack or queue mode.
+ * @stack: A pointer to the top (stack) or bottom (queue)
+ *         of a stack_t linked list.
+ *
+ * Return: If the stack_t is in stack mode - STACK (0).
+ *         If the stack_t is in queue mode - QUEUE (1).
+ *         Otherwise - 2.
+ */
+int check_mode(stack_t *stack)
+{
 	if (stack->n == STACK)
 		return (STACK);
 	else if (stack->n == QUEUE)
 		return (QUEUE);
-	return (ret_val);
+	return (2);
 }
+
